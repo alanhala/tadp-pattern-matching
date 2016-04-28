@@ -33,3 +33,33 @@ end
 class Object
   include PatternMatching
 end
+
+
+class Symbol
+
+  def call(value, bind_object)
+    bind_object.singleton_class.send(:attr_accessor, self)
+
+    setter = (self.to_s + '=').to_sym
+    bind_object.send(setter, value)
+
+    true
+  end
+
+end
+
+
+def with(*matchers, &block)
+
+  binding_object = Object.new
+
+  Proc.new do
+  |value|
+
+    if(matchers.all? { |matcher| matcher.call(value, binding_object) })
+      binding_object.instance_eval &block
+      return
+    end
+  end
+
+end
