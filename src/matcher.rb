@@ -35,9 +35,11 @@ class Object
 end
 
 
-class Symbol
 
-  def call(value, bind_object)
+############## ACA VOY PONIENDO LOS INTENTOS DE BINDING Y MATCHES #######
+
+class Symbol
+  def call(value, bind_object=1)
     bind_object.singleton_class.send(:attr_accessor, self)
 
     setter = (self.to_s + '=').to_sym
@@ -45,21 +47,33 @@ class Symbol
 
     true
   end
-
 end
 
 
 def with(*matchers, &block)
-
   binding_object = Object.new
 
-  Proc.new do
-  |value|
-
-    if(matchers.all? { |matcher| matcher.call(value, binding_object) })
-      binding_object.instance_eval &block
-      return
-    end
+  if matchers.all? { |matcher| matcher.call(object_to_match, binding_object) }
+    raise MatchFoundException.new(binding_object.instance_eval &block)
   end
+end
 
+
+def matches?(object_to_match, &block)
+  ejecutador = Object.new
+  :object_to_match.call(object_to_match, ejecutador)
+
+  begin
+    ejecutador.instance_eval &block
+  rescue MatchFoundException => e
+    e.data
+  end
+end
+
+class MatchFoundException < StandardError
+  attr_accessor :data
+
+  def initialize(data)
+    self.data = data
+  end
 end
