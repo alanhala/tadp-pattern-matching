@@ -1,3 +1,5 @@
+require_relative './match_found_exception'
+
 module PatternMatching
   def val(value)
     Matcher.new(value) do |val, val_to_compare|
@@ -14,9 +16,9 @@ module PatternMatching
   def list(list, match_size = true)
     Matcher.new(list) do |list, list_to_compare|
       if match_size
-        result = (list == list_to_compare)
+        list.size == list_to_compare.size && same_elements(list, list_to_compare)
       elsif list.size <= list_to_compare.size
-        result = list.zip(list_to_compare).select{ |x, y| !y.nil? }.all? { |x, y| x == y }
+        list_included?(list, list_to_compare)
       else
         result = false
       end
@@ -27,5 +29,37 @@ module PatternMatching
     Matcher.new(methods) do |methods, object|
       methods.all? { |method| object.methods.include? method }
     end
+  end
+
+  def with(*matchers, &block)
+    if !matchers.empty? && matchers.all? { |matcher| matcher.call(self) }
+      raise MatchFoundException.new(yield)
+    end
+  end
+
+  def otherwise(&block)
+    yield
+  end
+
+  def matches?(an_object, &block)
+    begin
+      an_object.instance_eval(&block)
+    rescue MatchFoundException => e
+      e.data
+    end
+  end
+
+  private
+
+  def same_elements(list, list_to_compare)
+    list.zip(list_to_compare).all? { |x, y| check_match(x, y) }
+  end
+
+  def check_match(x, y)
+    x.respond_to?(:call) ? x.call(y) : val(x).call(y)
+  end
+
+  def list_included?(list, list_to_compare)
+    list.zip(list_to_compare).select{ |x, y| !y.nil? }.all? { |x, y| check_match(x, y) }
   end
 end

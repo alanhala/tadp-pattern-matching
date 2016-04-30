@@ -1,5 +1,5 @@
 require 'byebug'
-require_relative 'pattern_matching'
+require_relative './pattern_matching'
 
 class Matcher
   def initialize(object, &block)
@@ -27,6 +27,13 @@ class Matcher
     Matcher.new(@object) do |object, object_to_compare|
       !@block.call(object, object_to_compare)
     end
+  end
+end
+
+class Symbol
+  def call(value)
+    PatternMatching.send(:define_method, self) { value }
+    true
   end
 end
 
