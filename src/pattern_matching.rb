@@ -22,7 +22,7 @@ module PatternMatching
       if match_size
         list.size == list_to_compare.size && match_lists?(list, list_to_compare, binding_object)
       else
-        list.size <= list_to_compare && match_lists?(list, list_to_compare, binding_object)
+        list.size <= list_to_compare.size && match_lists?(list, list_to_compare, binding_object)
       end
     end
 
