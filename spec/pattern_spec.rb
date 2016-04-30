@@ -104,6 +104,12 @@ describe '#list' do
         expect(list([1,3,2]).call(an_array)).to eq false
       end
     end
+
+    context 'al combinarse con matchers de variables' do
+      it 'devuelve true' do
+        expect(list([:a, :b, :c, :d]).call(an_array)).to eq true
+      end
+    end
   end
 end
 
@@ -139,4 +145,39 @@ end
 describe '#not' do
   it { expect(type(Integer).not.call(5)).to be false }
   it { expect(duck(:method_2).not.call(Object.new)).to be true }
+end
+
+describe '#matches?' do
+  context 'con un solo with y matchea con el mismo' do
+    let(:result) { matches?([1, 2, 3]) { with(list([:a, val(2), duck(:+)])) { a + 2 } } }
+    it 'ejecuta el bloque y devuelve 3' do
+      expect(result).to eq 3
+    end
+  end
+
+  context 'con mas de un with y matchea con el primero' do
+    let(:result) do
+      matches?([1, 2, 3]) do
+        with(list([:a, val(2), duck(:+)])) { a + 2 }
+        with(list([1, 2, 3])) { 'acá no llego' }
+        otherwise { 'acá no llego' }
+      end
+    end
+    it 'ejecuta el bloque del primero' do
+      expect(result).to eq 3
+    end
+  end
+
+  context 'con mas de un with y llega al otherwise' do
+    let(:result) do
+      matches?(2) do
+        with(type(String)) { a + 2 }
+        with(list([1, 2, 3])) { 'acá no llego' }
+        otherwise { 'acá si llego' }
+      end
+    end
+    it 'devuelve el valor del otherwise' do
+      expect(result).to eq 'acá si llego'
+    end
+  end
 end
