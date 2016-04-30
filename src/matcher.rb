@@ -7,25 +7,25 @@ class Matcher
     @block = block
   end
 
-  def call(object_to_match)
-    @block.call(@object, object_to_match)
+  def call(object_to_match, binding_object = Object.new)
+    @block.call(@object, object_to_match, binding_object)
   end
 
   def and(*matchers)
-  	Matcher.new(matchers << self) do |matchers, object_to_compare|
-      matchers.all? { |matcher| matcher.call(object_to_compare) }
+  	Matcher.new(matchers << self) do |matchers, object_to_compare, binding_object|
+      matchers.all? { |matcher| matcher.call(object_to_compare, binding_object) }
     end
   end
 
   def or(*matchers)
-    Matcher.new(matchers << self) do |matchers, object_to_compare|
-      matchers.any? { |matcher| matcher.call(object_to_compare) }
+    Matcher.new(matchers << self) do |matchers, object_to_compare, binding_object|
+      matchers.any? { |matcher| matcher.call(object_to_compare, binding_object) }
     end
   end
 
   def not
-    Matcher.new(@object) do |object, object_to_compare|
-      !@block.call(object, object_to_compare)
+    Matcher.new(@object) do |object, object_to_compare, binding_object|
+      !@block.call(object, object_to_compare, binding_object)
     end
   end
 end
@@ -39,7 +39,7 @@ end
 ############## ACA VOY PONIENDO LOS INTENTOS DE BINDING Y MATCHES #######
 
 class Symbol
-  def call(value, bind_object=1)
+  def call(value, bind_object = Object.new)
     bind_object.singleton_class.send(:attr_accessor, self)
 
     setter = (self.to_s + '=').to_sym
@@ -49,6 +49,10 @@ class Symbol
   end
 end
 
+
+def otherwise(&block)
+  raise MatchFoundException.new(block.call)
+end
 
 def with(*matchers, &block)
   binding_object = Object.new

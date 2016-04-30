@@ -11,16 +11,21 @@ module PatternMatching
     end
   end
 
+
   def list(list, match_size = true)
-    Matcher.new(list) do |list, list_to_compare|
+
+    Matcher.new(list) do |list, list_to_compare, binding_object|
+      if !list_to_compare.is_a? Array
+        return false
+      end
+
       if match_size
-        result = (list == list_to_compare)
-      elsif list.size <= list_to_compare.size
-        result = list.zip(list_to_compare).select{ |x, y| !y.nil? }.all? { |x, y| x == y }
+        list.size == list_to_compare.size && match_lists?(list, list_to_compare, binding_object)
       else
-        result = false
+        list.size <= list_to_compare && match_lists?(list, list_to_compare, binding_object)
       end
     end
+
   end
 
   def duck(*methods)
@@ -28,4 +33,20 @@ module PatternMatching
       methods.all? { |method| object.methods.include? method }
     end
   end
+
+  private
+  def match_lists?(list, list_to_compare, binding_object)
+    match_list = true
+
+    list.each_index do |i|
+      if list[i].is_a?(Matcher) || list[i].is_a?(Symbol)
+        match_list = match_list && list[i].call(list_to_compare[i], binding_object)
+      else
+        match_list = match_list && list[i] == list_to_compare[i]
+      end
+    end
+
+    match_list
+  end
+
 end
