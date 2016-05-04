@@ -1,4 +1,5 @@
 require_relative './match_found_exception'
+require_relative './bind_method'
 
 module PatternMatching
   def val(value)
@@ -31,7 +32,7 @@ module PatternMatching
 
   def with(*matchers, &block)
     if !matchers.empty? && matchers.all? { |matcher| matcher.call(self) }
-      raise MatchFoundException.new(yield)
+      raise MatchFoundException.new(BindMethod.class_eval(&block))
     end
   end
 
@@ -43,6 +44,7 @@ module PatternMatching
     begin
       an_object.instance_eval(&block)
     rescue MatchFoundException => e
+      BindMethod.clear_methods
       e.data
     end
   end

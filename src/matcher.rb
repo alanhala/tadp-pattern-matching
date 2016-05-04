@@ -32,7 +32,7 @@ end
 
 class Symbol
   def call(value)
-    PatternMatching.send(:define_method, self) { value }
+    BindMethod.define_method(self) { value }
     true
   end
 end
