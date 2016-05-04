@@ -17,10 +17,8 @@ module PatternMatching
     Matcher.new(list) do |list, list_to_compare|
       if match_size
         list.size == list_to_compare.size && same_elements(list, list_to_compare)
-      elsif list.size <= list_to_compare.size
-        list_included?(list, list_to_compare)
       else
-        result = false
+        list.size <= list_to_compare.size && list_included?(list, list_to_compare)
       end
     end
   end
