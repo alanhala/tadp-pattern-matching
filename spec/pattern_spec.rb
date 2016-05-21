@@ -153,11 +153,6 @@ describe '#matches?' do
     it 'ejecuta el bloque y devuelve 3' do
       expect(result).to eq 3
     end
-
-    it 'elimina los metodos bindeados' do
-      result
-      expect(BindMethod.methods).to eq({})
-    end
   end
 
   context 'con mas de un with y matchea con el primero' do
