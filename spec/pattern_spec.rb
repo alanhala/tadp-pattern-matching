@@ -16,6 +16,12 @@ describe '#val' do
   end
 end
 
+describe '#if' do
+  it { expect(:a_string.if { length < 10 }.call("this is not a string")).to eq false }
+  it { expect(:a_string.if { length < 10 }.call("wololo")).to eq true }
+  it { expect { :a_number.if do length? end.call(23) }.to raise_error(NoMethodError) }
+end
+
 
 describe '#type' do
 
@@ -179,5 +185,16 @@ describe '#matches?' do
     it 'devuelve el valor del otherwise' do
       expect(result).to eq 'acá si llego'
     end
+  end
+
+  context 'cuando matchea con un if matcher' do
+    let(:result) do
+      matches?([1,2,3]) do
+        with((list([:uno.if { odd? }, :dos, :tres]))) { uno + dos + tres }
+        otherwise { 1 }
+      end
+    end
+
+    it { expect(result).to eq 6 }
   end
 end

@@ -35,6 +35,16 @@ class Symbol
     context.singleton_class.send(:define_method, self) { value }
     true
   end
+
+  def if(&condition)
+    Matcher.new(self) do |sym, val, context|
+      if val.instance_eval(&condition)
+        sym.call(val, context)
+      else
+        false
+      end
+    end
+  end
 end
 
 class Object
